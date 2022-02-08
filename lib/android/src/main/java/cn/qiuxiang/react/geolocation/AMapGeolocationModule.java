@@ -1,5 +1,7 @@
 package cn.qiuxiang.react.geolocation;
 
+import android.util.Log;
+
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
@@ -16,7 +18,6 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 @SuppressWarnings("unused")
 public class AMapGeolocationModule extends ReactContextBaseJavaModule implements AMapLocationListener {
     private ReactApplicationContext reactContext;
-    private DeviceEventManagerModule.RCTDeviceEventEmitter eventEmitter;
     private AMapLocationClient client;
     private AMapLocationClientOption option = new AMapLocationClientOption();
 
@@ -33,26 +34,22 @@ public class AMapGeolocationModule extends ReactContextBaseJavaModule implements
     @Override
     public void onLocationChanged(AMapLocation location) {
         if (location != null) {
-            eventEmitter.emit("AMapGeolocation", toJSON(location));
+            sendEvent("AMapGeolocation", toJSON(location));
         }
     }
 
     @ReactMethod
-    public void init(String key, Promise promise) {
+    public void init(String key, Promise promise) throws Exception {
         if (client != null) {
             client.onDestroy();
         }
         AMapLocationClient.setApiKey(key);
-        AMapLocationClient.updatePrivacyShow(reactContext,true,true);
-        AMapLocationClient.updatePrivacyAgree(reactContext,true);
-        try {
-            client = new AMapLocationClient(reactContext);
-            client.setLocationListener(this);
-            eventEmitter = reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class);
-            promise.resolve(null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        AMapLocationClient.updatePrivacyShow(reactContext, true, true);
+        AMapLocationClient.updatePrivacyAgree(reactContext, true);
+
+        client = new AMapLocationClient(reactContext);
+        client.setLocationListener(this);
+        promise.resolve(null);
     }
 
     @ReactMethod
@@ -163,6 +160,14 @@ public class AMapGeolocationModule extends ReactContextBaseJavaModule implements
     public void setGeoLanguage(String language) {
         option.setGeoLanguage(AMapLocationClientOption.GeoLanguage.valueOf(language));
         client.setLocationOption(option);
+    }
+
+    public void sendEvent(String eventName, ReadableMap params) {
+        try {
+            reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, params);
+        } catch (Throwable throwable) {
+            Log.d( "AMapGeolocation", "sendEvent error:" + throwable.getMessage());
+        }
     }
 
     private ReadableMap toJSON(AMapLocation location) {
