@@ -21,7 +21,7 @@
     "lib/android/src",
     "lib/android/build.gradle"
   ],
-  "main": "lib/js",
+  "main": "src",
   "scripts": {
     "dev": "tsc -w",
     "build": "tsc",

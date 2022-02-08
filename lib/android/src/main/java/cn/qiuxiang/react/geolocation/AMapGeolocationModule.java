@@ -42,12 +42,17 @@ public class AMapGeolocationModule extends ReactContextBaseJavaModule implements
         if (client != null) {
             client.onDestroy();
         }
-
         AMapLocationClient.setApiKey(key);
-        client = new AMapLocationClient(reactContext);
-        client.setLocationListener(this);
-        eventEmitter = reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class);
-        promise.resolve(null);
+        AMapLocationClient.updatePrivacyShow(reactContext,true,true);
+        AMapLocationClient.updatePrivacyAgree(reactContext,true);
+        try {
+            client = new AMapLocationClient(reactContext);
+            client.setLocationListener(this);
+            eventEmitter = reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class);
+            promise.resolve(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @ReactMethod
